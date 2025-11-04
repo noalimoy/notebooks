@@ -62,12 +62,12 @@ jobs:
           #     of the value entered here.
           publish_results: true
 
-      - name: Add branch metadata to SARIF
-        run: |
-          # Modify ruleId to include branch information for identification
-          jq '.runs[0].results[] |= (.ruleId = "scorecard/${{ matrix.branch }}/" + .ruleId)' \
-            scorecard-fs-scan-results-${{ matrix.branch }}.sarif > scorecard-fs-scan-results-${{ matrix.branch }}-processed.sarif
-          mv scorecard-fs-scan-results-${{ matrix.branch }}-processed.sarif scorecard-fs-scan-results-${{ matrix.branch }}.sarif
+      # - name: Add branch metadata to SARIF
+      #   run: |
+      #     # Modify ruleId to include branch information for identification
+      #     jq '.runs[0].results[] |= (.ruleId = "scorecard/${{ matrix.branch }}/" + .ruleId)' \
+      #       scorecard-fs-scan-results-${{ matrix.branch }}.sarif > scorecard-fs-scan-results-${{ matrix.branch }}-processed.sarif
+      #     mv scorecard-fs-scan-results-${{ matrix.branch }}-processed.sarif scorecard-fs-scan-results-${{ matrix.branch }}.sarif
 
       - name: "Upload Scorecard results as artifact"
         uses: actions/upload-artifact@v4
@@ -80,5 +80,5 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'scorecard-fs-scan-results-${{ matrix.branch }}.sarif'
-          ref: ${{ steps.checkout.outputs.ref }}
-          sha: ${{ steps.checkout.outputs.commit }}
+          ref: refs/heads/${{ matrix.branch }}
+          sha: ${{ github.sha }}

@@ -42,14 +42,13 @@ jobs:
           persist-credentials: false
           ref: refs/heads/${{ matrix.branch }}
 
-      - name: "Debug: Verify Checked Out Commit and Files"
-        run: |
-          echo "Currently checked out commit:"
-          git rev-parse HEAD
-          echo "Current branch (if attached):"
-          git branch --show-current
-          echo "Checking if trivy file exists on disk:"
-          ls -la .github/workflows/trivy-fs-scanning.yaml || echo "File NOT found on disk"
+      - name: "Debug: Upload .github workflows dir"
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-workflows-dir-${{ matrix.branch }}
+          path: .github/workflows/
+          if-no-files-found: warn
+          retention-days: 1
 
       - name: "Run Scorecard analysis"
         uses: ossf/scorecard-action@05b42c624433fc40578a4040d5cf5e36ddca8cde # v2.4.2

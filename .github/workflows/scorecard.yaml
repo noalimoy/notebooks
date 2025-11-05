@@ -88,5 +88,5 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'scorecard-fs-scan-results-${{ matrix.branch }}.sarif'
-          ref: refs/heads/${{ matrix.branch }}
-          sha: ${{ github.sha }}
+          ref: ${{ steps.checkout.outputs.ref }}
+          sha: ${{ steps.checkout.outputs.commit }}

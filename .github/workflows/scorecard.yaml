@@ -42,18 +42,10 @@ jobs:
           persist-credentials: false
           ref: refs/heads/${{ matrix.branch }}
 
-      - name: "Debug: Upload .github workflows dir"
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-workflows-dir-${{ matrix.branch }}
-          path: .github/workflows/
-          if-no-files-found: warn
-          retention-days: 1
-
       - name: "Run Scorecard analysis"
         uses: ossf/scorecard-action@05b42c624433fc40578a4040d5cf5e36ddca8cde # v2.4.2
         with:
-          results_file: scorecard-fs-scan-results-${{ matrix.branch }}.sarif
+          results_file: scorecard-scan-results-${{ matrix.branch }}.sarif
           results_format: sarif
           # (Optional) "write" PAT token. Uncomment the `repo_token` line below if:
           # - you want to enable the Branch-Protection check on a *public* repository, or

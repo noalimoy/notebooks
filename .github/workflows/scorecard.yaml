@@ -23,13 +23,8 @@ jobs:
     name: Scorecard analysis
     runs-on: ubuntu-latest
     permissions:
-      # Needed to upload the results to code-scanning dashboard.
-      security-events: write
-      # Needed to publish results and get a badge (see publish_results below).
-      id-token: write
-      # Uncomment the permissions below if installing in a private repository.
-      # contents: read
-      # actions: read
+      security-events: write   # Needed to upload the results to code-scanning dashboard.
+      id-token: write          # Needed to publish results and get a badge (see publish_results below).
     strategy:
       matrix:
         branch: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]', github.event.inputs.branch)) || fromJSON('["notebooks-v1", "notebooks-v2"]') }}
@@ -37,7 +32,7 @@ jobs:
     steps:
       - name: "Checkout code"
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955  #v4.3.0
         with:
           persist-credentials: false
           ref: refs/heads/${{ matrix.branch }}
@@ -45,33 +40,28 @@ jobs:
       - name: "Run Scorecard analysis"
         uses: ossf/scorecard-action@05b42c624433fc40578a4040d5cf5e36ddca8cde # v2.4.2
         with:
-          results_file: scorecard-scan-results-${{ matrix.branch }}.sarif
+          results_file: scorecard-fs-scan-results-${{ matrix.branch }}.sarif
           results_format: sarif
-          # (Optional) "write" PAT token. Uncomment the `repo_token` line below if:
-          # - you want to enable the Branch-Protection check on a *public* repository, or
-          # - you are installing Scorecard on a *private* repository
-          # To create the PAT, follow the steps in https://github.com/ossf/scorecard-action#authentication-with-pat.
-          # repo_token: ${{ secrets.SCORECARD_TOKEN }}
+          source: local 
+          publish_results: false
 
-          # Public repositories:
-          #   - Publish results to OpenSSF REST API for easy access by consumers
-          #   - Allows the repository to include the Scorecard badge.
-          #   - See https://github.com/ossf/scorecard-action#publishing-results.
-          # For private repositories:
-          #   - `publish_results` will always be set to `false`, regardless
-          #     of the value entered here.
-          publish_results: true
+      # - name: Add branch metadata to SARIF
+      #   run: |
+      #     # Modify ruleId to include branch information for identification
+      #     jq '.runs[0].results[] |= (.ruleId = "scorecard/${{ matrix.branch }}/" + .ruleId)' \
+      #       scorecard-fs-scan-results-${{ matrix.branch }}.sarif > scorecard-fs-scan-results-${{ matrix.branch }}-processed.sarif
+      #     mv scorecard-fs-scan-results-${{ matrix.branch }}-processed.sarif scorecard-fs-scan-results-${{ matrix.branch }}.sarif
 
       - name: "Upload Scorecard results as artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: scorecard-scan-results-${{ matrix.branch }}
-          path: scorecard-scan-results-${{ matrix.branch }}.sarif
+          name: scorecard-fs-scan-results-${{ matrix.branch }}
+          path: scorecard-fs-scan-results-${{ matrix.branch }}.sarif
           retention-days: 5
 
       - name: "Upload scorecard results to GitHub's code scanning dashboard"
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@181d5eefc20863364f96762470ba6f862bdef56b # v3.29.2
         with:
-          sarif_file: 'scorecard-scan-results-${{ matrix.branch }}.sarif'
+          sarif_file: 'scorecard-fs-scan-results-${{ matrix.branch }}.sarif'
           ref: ${{ steps.checkout.outputs.ref }}
           sha: ${{ steps.checkout.outputs.commit }}
